@@ -1,0 +1,3 @@
+function aa(){
+    document.struktur
+}
