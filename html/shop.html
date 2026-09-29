@@ -1,0 +1,102 @@
+<!doctype html>
+<!-- Penanggung jawab: David | Halaman: Semua Produk -->
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Semua Produk OFFBEAT — proyek toko streetwear dengan HTML, CSS, dan JavaScript murni.">
+    <meta name="theme-color" content="#363d2b">
+    <title>
+      Semua Produk — OFFBEAT
+    </title>
+    <link rel="icon" href="../images/favicon.png" type="image/png">
+    <link rel="stylesheet" href="../css/style.css">
+      <script src="../js/script.js" defer></script>
+  </head>
+  <body data-owner="David">
+    <a href="#main" class="skip">
+      Langsung ke konten
+    </a>
+    <div id="site-header">
+    </div>
+    <noscript>
+      <div class="no-js">
+        Aktifkan JavaScript untuk katalog dan fitur belanja.
+        <a href="../html/index.html">
+          Beranda
+        </a>
+        ·
+        <a href="../html/about.html">
+          Tentang kami
+        </a>
+      </div>
+    </noscript>
+    <main id="main">
+      <div class="container content-bottom">
+        <div class="page-head">
+          <div class="breadcrumb">
+            <a href="../html/index.html">
+              Home
+            </a>
+             /  The Good Stuff.
+          </div>
+          <span class="eyebrow">
+            THE SHOP / ALL PRODUCTS
+          </span>
+          <h1>
+            THE GOOD STUFF.
+          </h1>
+          <p>
+            Semua favorit dalam satu tempat. Cari sesuatu yang paling kamu.
+          </p>
+        </div>
+        <div class="toolbar">
+          <p id="catalog-count" role="status">
+          </p>
+          <div class="filter-group">
+            <label class="sr-only" for="category-filter">
+              Kategori produk
+            </label>
+            <select id="category-filter">
+              <option value="all">
+                Semua kategori
+              </option>
+              <option value="tees">
+                Kaos
+              </option>
+              <option value="hoodies">
+                Hoodie
+              </option>
+              <option value="accessories">
+                Aksesori
+              </option>
+            </select>
+            <label class="sr-only" for="catalog-sort">
+              Urutan produk
+            </label>
+            <select id="catalog-sort">
+              <option value="featured">
+                Pilihan kami
+              </option>
+              <option value="low">
+                Harga terendah
+              </option>
+              <option value="high">
+                Harga tertinggi
+              </option>
+              <option value="az">
+                Nama A–Z
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="product-grid" id="catalog-products">
+        </div>
+      </div>
+    </main>
+    <div id="site-footer">
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+    </div>
+  </body>
+</html>
