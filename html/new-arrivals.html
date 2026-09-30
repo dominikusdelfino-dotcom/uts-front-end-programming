@@ -1,11 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!doctype html>
+<html lang="id">
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#363d2b">
+    <title>
+      Produk Terbaru — OFFBEAT
+    </title>
+    <link rel="icon" href="../images/favicon.png" type="image/png">
+    <link rel="stylesheet" href="../css/style.css">
+      <script src="../js/script.js" defer></script>
+  </head>
+  <body>
+    <a href="#main" class="skip">
+      Langsung ke konten
+    </a>
+    <div id="site-header">
+    </div>
+    <noscript>
+      <div class="no-js">
+        Aktifkan JavaScript untuk katalog dan fitur belanja.
+        <a href="../html/index.html">
+          Beranda
+        </a>
+        ·
+        <a href="../html/about.html">
+          Tentang kami
+        </a>
+      </div>
+    </noscript>
+    <main id="main">
+      <div class="container content-bottom">
+        <div class="page-head">
+          <div class="breadcrumb">
+            <a href="../html/index.html">
+              Home
+            </a>
+             /  Fresh Off The Press.
+          </div>
+          <span class="eyebrow">
+            NEW ARRIVALS / VOL. 01
+          </span>
+          <h1>
+            FRESH OFF THE PRESS.
+          </h1>
+          <p>
+            Koleksi pertama, energi baru. Kenalan dengan rilisan terbaru dari OFFBEAT.
+          </p>
+        </div>
+        <div class="notice">
+          Drop 01: After Hours, Good Noise, dan Off Duty. Delapan desain orisinal, satu frekuensi bersama.
+        </div>
+        <div class="toolbar">
+          <p id="new-count" role="status">
+          </p>
+          <div class="filter-group">
+            <label for="new-sort">
+              Urutkan
+            </label>
+            <select id="new-sort">
+              <option value="featured">
+                Pilihan terbaru
+              </option>
+              <option value="low">
+                Harga terendah
+              </option>
+              <option value="high">
+                Harga tertinggi
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="product-grid" id="new-products">
+        </div>
+      </div>
+    </main>
+    <div id="site-footer">
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+    </div>
+  </body>
 </html>
