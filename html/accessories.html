@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Katalog Aksesori OFFBEAT — proyek toko streetwear dengan HTML, CSS, dan JavaScript murni.">
+    <meta name="theme-color" content="#363d2b">
+    <title>
+      Katalog Aksesori — OFFBEAT
+    </title>
+    <link rel="icon" href="../images/favicon.png" type="image/png">
+    <link rel="stylesheet" href="../css/style.css">
+      <script src="../js/script.js" defer></script>
+  </head>
+  <body data-owner="David" data-category="accessories">
+    <a href="#main" class="skip">
+      Langsung ke konten
+    </a>
+    <div id="site-header">
+    </div>
+    <noscript>
+      <div class="no-js"> Aktifkan JavaScript untuk katalog dan fitur belanja.
+        <a href="../html/index.html">
+          Beranda
+        </a>
+        ·
+        <a href="../html/about.html">
+          Tentang kami
+        </a>
+      </div>
+    </noscript>
+    <main id="main">
+      <div class="container content-bottom">
+        <div class="page-head">
+          <div class="breadcrumb">
+            <a href="../html/index.html">
+              Home
+            </a>
+             /  Small Things. Big Energy.
+          </div>
+          <span class="eyebrow">
+            THE SHOP / ACCESSORIES
+          </span>
+          <h1>
+            SMALL THINGS. BIG ENERGY.
+          </h1>
+          <p>
+            Detail kecil yang bikin gaya sehari-hari terasa lengkap.
+          </p>
+        </div>
+        <div class="toolbar">
+          <p id="catalog-count" role="status">
+          </p>
+          <div class="filter-group">
+            <a class="text-link" href="../html/shop.html">
+              Semua kategori ↗
+            </a>
+            <label class="sr-only" for="catalog-sort">
+              Urutan produk
+            </label>
+            <select id="catalog-sort">
+              <option value="featured">
+                Pilihan kami
+              </option>
+              <option value="low">
+                Harga terendah
+              </option>
+              <option value="high">
+                Harga tertinggi
+              </option>
+              <option value="az">
+                Nama A–Z
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="product-grid" id="catalog-products">
+        </div>
+      </div>
+    </main>
+    <div id="site-footer">
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+    </div>
+  </body>
+</html>
