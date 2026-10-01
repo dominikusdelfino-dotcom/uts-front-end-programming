@@ -129,3 +129,135 @@ const PRODUCTS = [
     collection: 'off-duty',
   },
 ];
+
+if ($('#catalog-products')) {
+  function showCatalog() {
+    const category =
+      document.body.dataset.category || $('#category-filter')?.value || 'all';
+
+    let list = PRODUCTS.filter(
+      product => category === 'all' || product.category === category
+    );
+
+    const sort = $('#catalog-sort').value;
+    if (sort === 'low')  list.sort((a, b) => a.price - b.price);
+    if (sort === 'high') list.sort((a, b) => b.price - a.price);
+    if (sort === 'az')   list.sort((a, b) => a.name.localeCompare(b.name));
+
+    renderProducts('#catalog-products', list);
+    $('#catalog-count').textContent = `${list.length} produk`;
+  }
+
+  $('#category-filter')?.addEventListener('change', showCatalog);
+  $('#catalog-sort').addEventListener('change', showCatalog);
+  showCatalog();
+}
+
+if ($('#product-detail')) {
+  const product = productById(
+    new URLSearchParams(location.search).get('id') || 'after-hours'
+  );
+
+  if (!product) {
+    $('#product-detail').innerHTML = `
+      <div class="empty">
+        <h1>PRODUK TIDAK DITEMUKAN.</h1>
+        <p>Coba cari produk lain di katalog.</p>
+        <a class="btn" href="${window.resolvePath('shop.html')}">Kembali ke katalog</a>
+      </div>`;
+  } else {
+    document.title = product.name + ' — OFFBEAT';
+    $('#product-breadcrumb').textContent = product.name;
+
+    $('#product-detail').innerHTML = `
+      <div class="product-detail-image">
+        <img src="${window.resolvePath('images/')}${product.image}.png"
+          alt="${safe(product.name + ' warna ' + product.color)}"
+          width="480" height="540">
+      </div>
+      <div class="product-info">
+        <span class="eyebrow">${product.tag} / KOLEKSI OFFBEAT</span>
+        <h1>${product.name.toUpperCase()}</h1>
+        <div class="detail-price">${money(product.price)}</div>
+        <p>${product.description}</p>
+        <span class="detail-label">WARNA: ${product.color}</span>
+        <form id="add-product">
+          <fieldset class="sizes">
+            <legend class="detail-label">PILIH UKURAN</legend>
+            ${product.sizes
+              .map(
+                (size, index) => `
+              <label class="size-option">
+                <input type="radio" name="size" value="${size}" ${index === 0 ? 'checked' : ''}>
+                <span>${size}</span>
+              </label>`
+              )
+              .join('')}
+          </fieldset>
+          <a href="${window.resolvePath('size-guide.html')}" class="text-link" style="display:inline-block;margin-top:14px">
+            Lihat panduan ukuran
+          </a>
+          <div class="buy-row">
+            <label class="sr-only" for="product-qty">Jumlah</label>
+            <input id="product-qty" name="qty" type="number" min="1" max="10" value="1" required>
+            <button class="btn acid" type="submit">TAMBAH KE KERANJANG</button>
+          </div>
+        </form>
+        <button class="btn outline full" style="margin-top:10px"
+          id="detail-wishlist" type="button">Simpan ke wishlist</button>
+        <div class="detail-notes">
+          <p>
+            ${product.material}<br>
+            Ilustrasi produk merupakan mockup desain.<br>
+            Gratis ongkir reguler untuk belanja mulai Rp500.000.
+          </p>
+        </div>
+        <div class="accordions">
+          <details>
+            <summary>Detail produk dan perawatan</summary>
+            <p>
+              Cuci dengan air dingin, balik pakaian sebelum mencuci, hindari pemutih,
+              dan jangan setrika langsung di atas grafis.
+              ${
+                product.category === 'accessories'
+                  ? 'Bersihkan noda aksesori dengan kain lembap.'
+                  : 'Potongan santai; cek ukuran dalam sentimeter sebelum memilih.'
+              }
+            </p>
+          </details>
+          <details>
+            <summary>Pengiriman &amp; penukaran</summary>
+            <p>
+              Pengiriman reguler sekitar 3–5 hari kerja. Baca
+              <a href="${window.resolvePath('shipping.html')}">panduan pengiriman</a> dan
+              <a href="${window.resolvePath('faq.html')}">syarat penukaran</a>.
+              Seluruh transaksi di proyek ini adalah simulasi.
+            </p>
+          </details>
+        </div>
+      </div>`;
+
+    $('#add-product').addEventListener('submit', event => {
+      event.preventDefault();
+      const data = new FormData(event.target);
+      addToCart(product.id, data.get('size'), Number(data.get('qty')));
+    });
+
+    const wish = $('#detail-wishlist');
+    wish.dataset.wishlist = product.id;
+
+    function syncWish() {
+      const active = wishlistIds().includes(product.id);
+      wish.textContent = active ? 'Sudah disimpan' : 'Simpan ke wishlist';
+      wish.setAttribute('aria-pressed', String(active));
+    }
+
+    document.addEventListener('wishlist-change', syncWish);
+    syncWish();
+
+    renderProducts(
+      '#related-products',
+      PRODUCTS.filter(item => item.id !== product.id).slice(0, 4)
+    );
+  }
+}
