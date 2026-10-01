@@ -1,19 +1,16 @@
-<!doctype html>
-<!-- Penanggung jawab: Juan | Halaman: Hubungi Kami -->
+<!DOCTYPE html>
 <html lang="id">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="Hubungi Kami OFFBEAT — proyek toko streetwear dengan HTML, CSS, dan JavaScript murni.">
         <meta name="theme-color" content="#363d2b">
-        <title>
-        Hubungi Kami — OFFBEAT
-        </title>
+        <title>Hubungi Kami — OFFBEAT</title>
         <link rel="icon" href="../images/favicon.png" type="image/png">
         <link rel="stylesheet" href="../css/style.css">
         <script src="../js/script.js" defer></script>
     </head>
-    <body data-owner="Juan">
+    <body>
         <a href="#main" class="skip">Langsung ke konten</a>
         <div id="site-header">
         </div>
@@ -29,9 +26,7 @@
             <div class="container content-bottom">
                 <div class="page-head">
                     <div class="breadcrumb">
-                        <a href="../html/index.html">
-                        Home
-                        </a>
+                        <a href="../html/index.html">Home</a>
                         /  Let'S Talk.
                     </div>
                     <span class="eyebrow">CONTACT / SAY HELLO</span>
@@ -42,57 +37,64 @@
                     <div class="panel">
                         <h2>DROP US A LINE.</h2>
                         <form id="contact-form" class="form-grid">
-                        <div class="field">
-                            <label for="name">Nama kamu
-                            </label>
-                            <input id="name" name="name" type="text" required maxlength="60" autocomplete="name">
-                        </div>
-                        <div class="field">
-                            <label for="email">
-                            Email
-                            </label>
-                            <input id="email" name="email" type="email" required maxlength="120" autocomplete="email">
-                        </div>
-                        <div class="field wide">
-                            <label for="topic">
-                            Topik
-                            </label>
-                            <select id="topic" name="topic" required>
-                            <option value="">
-                                Pilih topik
-                            </option>
-                            <option>
-                                Produk dan ukuran
-                            </option>
-                            <option>
-                                Pesanan demo
-                            </option>
-                            <option>
-                                Kolaborasi
-                            </option>
-                            <option>
-                                Pertanyaan lainnya
-                            </option>
-                            </select>
-                        </div>
-                        <div class="field wide">
-                            <label for="message">
-                            Pesan
-                            </label>
-                            <textarea id="message" name="message" required minlength="10" maxlength="1500" placeholder="Ceritakan sedikit lebih detail…">
-                            </textarea>
-                        </div>
-                        <div class="field wide">
-                            <button class="btn acid" type="submit">
-                            KIRIM PESAN DEMO ↗
-                            </button>
-                            <p class="form-status" id="contact-status" role="status">
-                            </p>
-                        </div>
+                            <div class="field">
+                                <label for="name">Nama kamu</label>
+                                <input id="name" name="name" type="text" required maxlength="60" autocomplete="name">
+                            </div>
+                            <div class="field">
+                                <label for="email">Email</label>
+                                <input id="email" name="email" type="email" required maxlength="120" autocomplete="email">
+                            </div>
+                            <div class="field wide">
+                                <label for="topic">Topik</label>
+                                <select id="topic" name="topic" required>
+                                    <option value="">Pilih topik</option>
+                                    <option>Produk dan ukuran</option>
+                                    <option>Pesanan demo</option>
+                                    <option>Kolaborasi</option>
+                                    <option>Pertanyaan lainnya</option>
+                                </select>
+                            </div>
+                            <div class="field wide">
+                                <label for="message">Pesan</label>
+                                <textarea id="message" name="message" required minlength="10" maxlength="1500" placeholder="Ceritakan sedikit lebih detail…">
+                                </textarea>
+                            </div>
+                            <div class="field wide">
+                                <button class="btn acid" type="submit">KIRIM PESAN DEMO ↗</button>
+                                <p class="form-status" id="contact-status" role="status">
+                                </p>
+                            </div>
                         </form>
+                    </div>
+                    <div class="stack">
+                        <div class="notice">
+                            Formulir demo: pesan hanya divalidasi di halaman ini, tidak dikirim atau disimpan ke server.
+                        </div>
+                        <div class="panel">
+                            <span class="eyebrow">QUICK HELP</span>
+                            <h3>Jawabannya mungkin sudah ada.</h3>
+                            <p>Temukan panduan ukuran, estimasi pengiriman, dan pertanyaan umum.</p>
+                            <div class="link-row">
+                                <a href="../html/faq.html">Baca FAQ ↗</a>
+                                <a href="../html/size-guide.html">Panduan ukuran ↗</a>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <span class="eyebrow">
+                                THE PEOPLE BEHIND OFFBEAT
+                            </span>
+                            <h3>Lima orang. Satu proyek.</h3>
+                            <p>Deco, David, Juan, Kelvandi, dan Delfino.</p>
+                            <a href="../html/about.html" class="text-link" style="display:inline-block;margin-top:15px">Kenalan dengan kami ↗</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
+        <div id="site-footer">
+        </div>
+        <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+        </div>
     </body>
 </html>
