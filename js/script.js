@@ -291,3 +291,32 @@ if ($('#search-form')) {
   input.addEventListener('input', search);
   search();
 }
+
+if ($('#register-form')) {
+  $('#register-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const data = new FormData(event.target);
+    const name = String(data.get('name')).trim();
+
+    if (!name) {
+      toast('Masukkan nama yang valid.');
+      return;
+    }
+
+    const profile = {
+      name,
+      email: String(data.get('email')).trim().toLowerCase(),
+    };
+
+    const current = Store.get('profile', null);
+    if (current) {
+      $('#register-status').textContent =
+        'Browser ini sudah memiliki profil demo. Masuk menggunakan email profil tersebut, atau ubah profil melalui halaman akun.';
+      return;
+    }
+
+    if (Store.set('profile', profile) && Store.set('session', true)) {
+      location.href = window.resolvePath('account.html');
+    }
+  });
+}
