@@ -261,3 +261,33 @@ if ($('#product-detail')) {
     );
   }
 }
+
+if ($('#search-form')) {
+  const input = $('#search-input');
+  input.value = new URLSearchParams(location.search).get('q') || '';
+
+  function search() {
+    const query = input.value.trim().toLowerCase();
+    const list = PRODUCTS.filter(product =>
+      (product.name + ' ' + product.category + ' ' + product.color + ' ' + product.label)
+        .toLowerCase()
+        .includes(query)
+    );
+
+    renderProducts('#search-products', list);
+    $('#search-count').textContent = query
+      ? `${list.length} hasil untuk "${input.value.trim()}"`
+      : 'Jelajahi semua produk atau ketik kata kunci.';
+  }
+
+  $('#search-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const url = new URL(location.href);
+    url.searchParams.set('q', input.value.trim());
+    history.replaceState({}, '', url);
+    search();
+  });
+
+  input.addEventListener('input', search);
+  search();
+}
