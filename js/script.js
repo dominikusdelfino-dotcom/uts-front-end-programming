@@ -321,6 +321,225 @@ if ($('#register-form')) {
   });
 }
 
+if ($('#login-form')) {
+  $('#login-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const profile = Store.get('profile', null);
+    const email = String(new FormData(event.target).get('email')).trim().toLowerCase();
+
+    if (!profile || profile.email !== email) {
+      $('#login-status').textContent =
+        'Profil demo dengan email ini belum ada di browser. Buat profil terlebih dahulu.';
+      return;
+    }
+
+    if (Store.set('session', true)) location.href = window.resolvePath('account.html');
+  });
+}
+
+function accountNav() {
+  return `
+    <nav class="account-nav" aria-label="Menu akun">
+      <a href="${window.resolvePath('account.html')}" ${location.pathname.endsWith('account.html') ? 'aria-current="page"' : ''}>
+        Profil saya
+      </a>
+      <a href="${window.resolvePath('orders.html')}" ${location.pathname.endsWith('orders.html') ? 'aria-current="page"' : ''}>
+        Pesanan demo
+      </a>
+      <a href="${window.resolvePath('wishlist.html')}">Wishlist</a>
+      <button id="logout" type="button">Keluar dari demo ?</button>
+    </nav>`;
+}
+
+function bindLogout() {
+  $('#logout')?.addEventListener('click', () => {
+    if (Store.set('session', false)) location.href = window.resolvePath('login.html');
+  });
+}
+
+if ($('#account-content')) {
+  const profile = Store.get('profile', null);
+
+  if (!profile || !Store.get('session', false)) {
+    $('#account-content').innerHTML = `
+      <div class="empty">
+        <h2>WELCOME TO YOUR CORNER.</h2>
+        <p>Masuk ke profil demo untuk mengubah nama dan email kamu.</p>
+        <a class="btn acid" href="${window.resolvePath('login.html')}">Masuk ke demo ?</a>
+        <a class="btn outline" href="${window.resolvePath('register.html')}">Buat profil</a>
+      </div>`;
+  } else {
+    $('#account-content').innerHTML = `
+      <div class="account-layout">
+        ${accountNav()}
+        <div class="panel">
+          <h2>HEY, ${safe(profile.name.toUpperCase())}.</h2>
+          <p class="form-note">
+            Profil ini hanya ada di browser kamu. Gunakan data contoh untuk demo kelas.
+          </p>
+          <form id="profile-form" class="form-grid">
+            <div class="field">
+              <label for="profile-name">Nama</label>
+              <input id="profile-name" name="name" required maxlength="60"
+                value="${safe(profile.name)}" autocomplete="name">
+            </div>
+            <div class="field">
+              <label for="profile-email">Email</label>
+              <input id="profile-email" name="email" type="email" required maxlength="120"
+                value="${safe(profile.email)}" autocomplete="email">
+            </div>
+            <div class="field wide">
+              <button class="btn" type="submit">Simpan perubahan ?</button>
+              <p id="profile-status" class="form-status" role="status"></p>
+            </div>
+          </form>
+        </div>
+      </div>`;
+
+    bindLogout();
+
+    $('#profile-form').addEventListener('submit', event => {
+      event.preventDefault();
+      const data = new FormData(event.target);
+      const name = String(data.get('name')).trim();
+
+      if (!name) {
+        toast('Nama tidak boleh kosong.');
+        return;
+      }
+
+      if (
+        Store.set('profile', {
+          name,
+          email: String(data.get('email')).trim().toLowerCase(),
+        })
+      ) {
+        $('.panel h2').textContent = 'HEY, ' + name.toUpperCase() + '.';
+        $('#profile-status').textContent = 'Profil demo berhasil diperbarui.';
+      }
+    });
+  }
+}
+
+if ($('#orders-content')) {
+  const stored = Store.get('orders', []);
+  const orders = Array.isArray(stored) ? stored : [];
+
+  $('#orders-content').innerHTML = `
+    <div class="account-layout">
+      ${accountNav()}
+      <div>
+        ${
+          orders.length
+            ? orders
+                .map(
+                  order => `
+              <article class="panel" style="margin-bottom:20px">
+                <div class="section-top">
+                  <div>
+                    <span class="eyebrow">${new Date(order.date).toLocaleDateString('id-ID')}</span>
+                    <h3>${safe(order.id)}</h3>
+                  </div>
+                  <span class="status-pill">${safe(order.status)}</span>
+                </div>
+                <p>${order.items.reduce((sum, item) => sum + item.qty, 0)} item · ${money(order.total)}</p>
+                <a class="text-link" style="display:inline-block;margin-top:20px"
+                  href="${window.resolvePath('order-detail.html')}?id=${encodeURIComponent(order.id)}">
+                  Detail pesanan ?
+                </a>
+              </article>`
+                )
+                .join('')
+            : `<div class="empty">
+                <h2>YOUR STORY STARTS HERE.</h2>
+                <p>Pesanan demo di browser ini akan muncul setelah checkout.</p>
+                <a href="${window.resolvePath('shop.html')}" class="btn acid">Jelajahi produk ?</a>
+              </div>`
+        }
+      </div>
+    </div>`;
+
+  bindLogout();
+}
+
+if ($('#order-detail-content')) {
+  const id = new URLSearchParams(location.search).get('id');
+  const orders = Store.get('orders', []);
+  const order = Array.isArray(orders) ? orders.find(item => item.id === id) : null;
+
+  if (!order) {
+    $('#order-detail-content').innerHTML = `
+      <div class="empty">
+        <h2>PESANAN TIDAK DITEMUKAN.</h2>
+        <p>Pilih pesanan yang sudah dibuat di browser ini.</p>
+        <a class="btn" href="${window.resolvePath('orders.html')}">Lihat pesanan demo ?</a>
+      </div>`;
+  } else {
+    $('#order-detail-content').innerHTML = `
+      <div class="notice">
+        Pesanan simulasi. Status ini tidak terhubung dengan kurir atau pembayaran sungguhan.
+      </div>
+      <div class="section-top">
+        <div>
+          <span class="eyebrow">${new Date(order.date).toLocaleDateString('id-ID')}</span>
+          <h2>${safe(order.id)}</h2>
+        </div>
+        <span class="status-pill">${safe(order.status)}</span>
+      </div>
+      <div class="cart-layout">
+        <div>
+          <div class="panel">
+            <h3>Item pesanan</h3>
+            ${order.items
+              .map(
+                item => `
+              <article class="cart-row">
+                <img src="${window.resolvePath('images/')}${safe(item.image)}.png" alt="${safe(item.name)}">
+                <div>
+                  <h3>${safe(item.name)}</h3>
+                  <p>Ukuran ${safe(item.size)} · ${item.qty} item</p>
+                </div>
+                <span class="price">${money(item.price * item.qty)}</span>
+              </article>`
+              )
+              .join('')}
+          </div>
+          <ol class="timeline">
+            <li><strong>Pesanan demo dibuat</strong><br>Data berhasil disimpan di browser.</li>
+            <li><strong>Simulasi dikonfirmasi</strong><br>Tidak ada tahap pengiriman nyata.</li>
+          </ol>
+        </div>
+        <aside class="stack">
+          <div class="panel">
+            <h3>Alamat demo</h3>
+            <p>
+              ${safe(order.customer.name)}<br>
+              ${safe(order.customer.address)}<br>
+              ${safe(order.customer.city)}, ${safe(order.customer.postal)}<br>
+              ${safe(order.customer.phone)}
+            </p>
+          </div>
+          <div class="panel">
+            <h3>Ringkasan pembayaran</h3>
+            <p>
+              Metode: ${safe(order.payment)} (demo)<br>
+              Pengiriman: ${order.shipping === 'express' ? 'Ekspres' : 'Reguler'}
+            </p>
+            <div class="summary-line">
+              <span>Subtotal</span><span>${money(order.subtotal)}</span>
+            </div>
+            <div class="summary-line">
+              <span>Ongkir</span><span>${money(order.delivery)}</span>
+            </div>
+            <div class="summary-line total">
+              <span>Total</span><span>${money(order.total)}</span>
+            </div>
+          </div>
+        </aside>
+      </div>`;
+  }
+}
+
 if ($('#cart-content')) {
   function showCart() {
     const cart = cartItems();
