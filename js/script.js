@@ -624,7 +624,6 @@ if ($('#cart-content')) {
   showCart();
 }
 
-/* -- Halaman checkout -------------------------------------------------- */
 if ($('#checkout-form')) {
   const form = $('#checkout-form');
 
@@ -721,7 +720,6 @@ if ($('#checkout-form')) {
   });
 }
 
-/* -- Halaman order success --------------------------------------------- */
 if ($('#success-content')) {
   const id = new URLSearchParams(location.search).get('id');
   const orders = Store.get('orders', []);
@@ -753,4 +751,81 @@ if ($('#success-content')) {
         <p>Selesaikan checkout untuk melihat konfirmasi di sini.</p>
         <a class="btn acid" href="${window.resolvePath('shop.html')}">Mulai belanja ?</a>
       </div>`;
+}
+
+if ($('#wishlist-products')) {
+  function showWishlist() {
+    const list = PRODUCTS.filter(product => wishlistIds().includes(product.id));
+    $('#wishlist-count').textContent = `${list.length} produk disimpan`;
+
+    if (list.length) {
+      renderProducts('#wishlist-products', list);
+    } else {
+      $('#wishlist-products').innerHTML = `
+        <div class="empty">
+          <h2>YOUR NEXT FAVORITE IS OUT THERE.</h2>
+          <p>Klik ikon hati pada produk untuk menyimpannya di sini.</p>
+          <a class="btn acid" href="${window.resolvePath('shop.html')}">Temukan favoritmu ↗</a>
+        </div>`;
+    }
+  }
+
+  document.addEventListener('wishlist-change', showWishlist);
+  showWishlist();
+}
+
+if ($('#size-table-body')) {
+  const chart = {
+    tees:    [['S', 52, 68, 21], ['M', 55, 71, 22], ['L', 58, 74, 23], ['XL', 61, 77, 24]],
+    hoodies: [['S', 56, 66, 56], ['M', 59, 69, 58], ['L', 62, 72, 60], ['XL', 65, 75, 62]],
+  };
+
+  function showSizes(category) {
+    $$('[data-size-chart]').forEach(button =>
+      button.setAttribute('aria-pressed', String(button.dataset.sizeChart === category))
+    );
+    $('#size-chart-caption').textContent =
+      `Ukuran ${category === 'tees' ? 'kaos' : 'hoodie'} dalam sentimeter (cm)`;
+    $('#size-table-body').innerHTML = chart[category]
+      .map(row =>
+        '<tr>' +
+        row
+          .map((cell, i) => `<${i ? 'td' : 'th'} ${i ? '' : 'scope="row"'}>${cell}</${i ? 'td' : 'th'}>`)
+          .join('') +
+        '</tr>'
+      )
+      .join('');
+  }
+
+  $$('[data-size-chart]').forEach(button =>
+    button.addEventListener('click', () => showSizes(button.dataset.sizeChart))
+  );
+  showSizes('tees');
+}
+
+if ($('#faq-search')) {
+  $('#faq-search').addEventListener('input', event => {
+    const query = event.target.value.toLowerCase().trim();
+    let count = 0;
+
+    $$('#faq-list details').forEach(detail => {
+      detail.hidden = !detail.textContent.toLowerCase().includes(query);
+      if (!detail.hidden) count++;
+    });
+
+    $('#faq-count').textContent = count
+      ? `${count} jawaban tersedia`
+      : 'Belum ada jawaban yang cocok. Coba kata lain atau hubungi kami.';
+  });
+}
+
+if ($('#contact-form')) {
+  $('#contact-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const data = new FormData(event.target);
+    $('#contact-status').textContent =
+      `Terima kasih, ${data.get('name').trim()}. Pesan demo tentang "${data.get('topic')}" berhasil divalidasi. Tidak ada pesan yang dikirim ke pihak lain.`;
+    $('#contact-status').classList.add('success');
+    event.target.reset();
+  });
 }
