@@ -320,3 +320,218 @@ if ($('#register-form')) {
     }
   });
 }
+
+if ($('#cart-content')) {
+  function showCart() {
+    const cart = cartItems();
+
+    if (!cart.length) {
+      $('#cart-content').innerHTML = `
+        <div class="empty">
+          <h2>BAG KAMU MASIH KOSONG.</h2>
+          <p>Waktunya menemukan sesuatu yang terasa kamu banget.</p>
+          <a href="${window.resolvePath('shop.html')}" class="btn acid">Explore the good stuff ?</a>
+        </div>`;
+      return;
+    }
+
+    $('#cart-content').innerHTML = `
+      <div class="cart-layout">
+        <div>
+          ${cart
+            .map((item, index) => {
+              const product = productById(item.id);
+              return `
+                <article class="cart-row">
+                  <a href="${window.resolvePath('product.html')}?id=${product.id}">
+                    <img src="${window.resolvePath('images/')}${product.image}.png" alt="${product.name}">
+                  </a>
+                  <div>
+                    <h3><a href="${window.resolvePath('product.html')}?id=${product.id}">${product.name}</a></h3>
+                    <p>${product.color} / ${item.size}</p>
+                    <div class="quantity">
+                      <button data-qty="${index}" data-delta="-1"
+                        aria-label="Kurangi ${product.name}" ${item.qty === 1 ? 'disabled' : ''}>-</button>
+                      <span>${item.qty}</span>
+                      <button data-qty="${index}" data-delta="1"
+                        aria-label="Tambah ${product.name}" ${item.qty === 10 ? 'disabled' : ''}>+</button>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="price">${money(product.price * item.qty)}</span>
+                    <button class="remove" data-remove="${index}"
+                      aria-label="Hapus ${product.name}">Hapus</button>
+                  </div>
+                </article>`;
+            })
+            .join('')}
+          <p class="form-note">Maksimal 10 item untuk setiap kombinasi produk dan ukuran.</p>
+          <a href="${window.resolvePath('shop.html')}" class="text-link">? Lanjut belanja</a>
+        </div>
+        <aside class="panel summary">
+          <h2>YOUR BAG, SUMMED UP.</h2>
+          ${summaryHTML(cart)}
+          <p class="form-note">
+            Ongkir di atas menggunakan pengiriman reguler. Pilihan ekspres tersedia saat checkout.
+          </p>
+          <a class="btn acid full" href="${window.resolvePath('checkout.html')}">LANJUT CHECKOUT ?</a>
+          <p class="form-note">Simulasi belanja. Tidak ada pembayaran sungguhan.</p>
+        </aside>
+      </div>`;
+  }
+
+  $('#cart-content').addEventListener('click', event => {
+    const quantity = event.target.closest('[data-qty]');
+    const remove = event.target.closest('[data-remove]');
+    if (!quantity && !remove) return;
+
+    const cart = cartItems();
+
+    if (remove) {
+      cart.splice(Number(remove.dataset.remove), 1);
+    } else {
+      const row = cart[Number(quantity.dataset.qty)];
+      if (!row) return;
+      row.qty = Math.max(1, Math.min(10, row.qty + Number(quantity.dataset.delta)));
+    }
+
+    if (Store.set('cart', cart)) {
+      showCart();
+      updateCartCount();
+    }
+  });
+
+  document.addEventListener('cart-change', showCart);
+  showCart();
+}
+
+/* -- Halaman checkout -------------------------------------------------- */
+if ($('#checkout-form')) {
+  const form = $('#checkout-form');
+
+  function refreshCheckout() {
+    const cart = cartItems();
+
+    if (!cart.length) {
+      $('#checkout-layout').hidden = true;
+      $('#checkout-empty').hidden = false;
+      return;
+    }
+
+    $('#checkout-layout').hidden = false;
+    $('#checkout-empty').hidden = true;
+    $('#checkout-summary').innerHTML =
+      cart
+        .map(
+          item => `
+        <div class="summary-line">
+          <span>${productById(item.id).name}<br>
+            <small>${item.size} · ${item.qty}</small>
+          </span>
+          <span>${money(productById(item.id).price * item.qty)}</span>
+        </div>`
+        )
+        .join('') + summaryHTML(cart, $('#shipping-method').value);
+  }
+
+  const profile = Store.get('profile', null);
+  if (profile) {
+    form.elements.name.value = profile.name || '';
+    form.elements.email.value = profile.email || '';
+  }
+
+  $('#shipping-method').addEventListener('change', refreshCheckout);
+  document.addEventListener('cart-change', refreshCheckout);
+  refreshCheckout();
+
+  let submitting = false;
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (submitting) return;
+
+    const cart = cartItems();
+    if (!cart.length) { refreshCheckout(); return; }
+
+    const data = new FormData(form);
+    const name    = String(data.get('name')).trim();
+    const address = String(data.get('address')).trim();
+    const city    = String(data.get('city')).trim();
+
+    if (!name || !address || !city) {
+      toast('Nama, alamat, dan kota tidak boleh hanya berisi spasi.');
+      return;
+    }
+
+    submitting = true;
+    const shipping = data.get('shipping');
+    const created = new Date();
+
+    const order = {
+      id: 'OB-' + created.getTime().toString(36).toUpperCase(),
+      date: created.toISOString(),
+      customer: {
+        name,
+        email:  String(data.get('email')).trim(),
+        phone:  data.get('phone'),
+        address,
+        city,
+        postal: data.get('postal'),
+      },
+      items: cart.map(item => ({
+        ...item,
+        name:  productById(item.id).name,
+        price: productById(item.id).price,
+        image: productById(item.id).image,
+      })),
+      shipping,
+      payment: data.get('payment'),
+      ...totals(cart, shipping),
+      status: 'Dikonfirmasi (demo)',
+    };
+
+    const orders = Store.get('orders', []);
+    if (!Store.set('orders', [order, ...(Array.isArray(orders) ? orders : [])])) {
+      submitting = false;
+      return;
+    }
+
+    Store.set('cart', []);
+    updateCartCount();
+    location.href = window.resolvePath('order-success.html') + '?id=' + encodeURIComponent(order.id);
+  });
+}
+
+/* -- Halaman order success --------------------------------------------- */
+if ($('#success-content')) {
+  const id = new URLSearchParams(location.search).get('id');
+  const orders = Store.get('orders', []);
+  const order = Array.isArray(orders) ? orders.find(item => item.id === id) : null;
+
+  $('#success-content').innerHTML = order
+    ? `
+      <div class="success-mark">?</div>
+      <span class="eyebrow">YOU'RE PART OF THE CLUB</span>
+      <h1>GOOD CHOICE.<br>GREAT ENERGY.</h1>
+      <p style="margin:24px 0">
+        Pesanan demo <strong>${safe(order.id)}</strong> berhasil dibuat.<br>
+        Terima kasih, ${safe(order.customer.name)}!
+      </p>
+      <div class="panel" style="text-align:left">
+        ${summaryHTML(order.items, order.shipping)}
+        <p class="form-note">
+          Tidak ada uang ditagih, email dikirim, atau barang dikirimkan.
+          Pesanan tersimpan di browser ini.
+        </p>
+      </div>
+      <a class="btn acid" href="${window.resolvePath('order-detail.html')}?id=${encodeURIComponent(order.id)}">
+        LIHAT PESANAN ?
+      </a>
+      <a class="btn outline" href="${window.resolvePath('shop.html')}">Lanjut belanja</a>`
+    : `
+      <div class="empty">
+        <h1>BELUM ADA PESANAN.</h1>
+        <p>Selesaikan checkout untuk melihat konfirmasi di sini.</p>
+        <a class="btn acid" href="${window.resolvePath('shop.html')}">Mulai belanja ?</a>
+      </div>`;
+}
