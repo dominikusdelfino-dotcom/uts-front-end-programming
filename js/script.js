@@ -829,3 +829,371 @@ if ($('#contact-form')) {
     event.target.reset();
   });
 }
+
+
+'use strict';
+const PAGE_FOLDERS = {
+  "index.html": "html",
+  "new-arrivals.html": "html",
+  "collections.html": "html",
+  "lookbook.html": "html",
+  "about.html": "html",
+  "shop.html": "html",
+  "tees.html": "html",
+  "hoodies.html": "html",
+  "accessories.html": "html",
+  "product.html": "html",
+  "search.html": "html",
+  "wishlist.html": "html",
+  "size-guide.html": "html",
+  "faq.html": "html",
+  "contact.html": "html",
+  "cart.html": "html",
+  "checkout.html": "html",
+  "shipping.html": "html",
+  "payment.html": "html",
+  "order-success.html": "html",
+  "login.html": "html",
+  "register.html": "html",
+  "account.html": "html",
+  "orders.html": "html",
+  "order-detail.html": "html"
+};
+
+window.resolvePath = function(path) {
+  if (path.startsWith('images/')) return '../' + path;
+  const parts = path.split('?');
+  const base = parts[0];
+  if (PAGE_FOLDERS[base]) {
+    return '../' + PAGE_FOLDERS[base] + '/' + path;
+  }
+  return path;
+};
+
+
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+const money = value =>
+  new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0,
+  }).format(value);
+
+const safe = value =>
+  String(value ?? '').replace(
+    /[&<>"']/g,
+    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])
+  );
+
+
+const Store = {
+  get(key, fallback) {
+    try {
+      const value = JSON.parse(localStorage.getItem('offbeat:' + key));
+      return value ?? fallback;
+    } catch {
+      return fallback;
+    }
+  },
+  set(key, value) {
+    try {
+      localStorage.setItem('offbeat:' + key, JSON.stringify(value));
+      return true;
+    } catch {
+      toast('Penyimpanan browser tidak tersedia. Izinkan penyimpanan untuk melanjutkan.');
+      return false;
+    }
+  },
+};
+
+
+const productById = id => PRODUCTS.find(product => product.id === id);
+
+function cartItems() {
+  const rows = Store.get('cart', []);
+  return Array.isArray(rows)
+    ? rows.filter(
+        row =>
+          row &&
+          productById(row.id)?.sizes.includes(row.size) &&
+          Number.isInteger(row.qty) &&
+          row.qty > 0 &&
+          row.qty <= 10
+      )
+    : [];
+}
+
+function wishlistIds() {
+  const ids = Store.get('wishlist', []);
+  return Array.isArray(ids) ? ids.filter(id => productById(id)) : [];
+}
+
+function totals(cart = cartItems(), shipping = 'regular') {
+  const subtotal = cart.reduce((sum, item) => sum + productById(item.id).price * item.qty, 0);
+  const delivery =
+    subtotal === 0 ? 0 : shipping === 'express' ? 30000 : subtotal >= 500000 ? 0 : 18000;
+  return { subtotal, delivery, total: subtotal + delivery };
+}
+
+function addToCart(id, size, qty) {
+  const product = productById(id);
+  if (!product || !product.sizes.includes(size) || !Number.isInteger(qty) || qty < 1 || qty > 10)
+    return false;
+
+  const cart = cartItems();
+  const existing = cart.find(item => item.id === id && item.size === size);
+
+  if (existing && existing.qty + qty > 10) {
+    toast('Maksimal 10 item per produk dan ukuran.');
+    return false;
+  }
+
+  if (existing) existing.qty += qty;
+  else cart.push({ id, size, qty });
+
+  if (!Store.set('cart', cart)) return false;
+
+  updateCartCount();
+  toast('Ditambahkan ke keranjang. Good choice!');
+  return true;
+}
+
+
+function toast(message) {
+  const box = $('#toast');
+  if (!box) return;
+  box.textContent = message;
+  box.hidden = false;
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => (box.hidden = true), 3800);
+}
+
+function icon(name) {
+  const paths = {
+    search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
+    bag: '<path d="M5 7h14l1 14H4L5 7Z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/>',
+    user: '<circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/>',
+    heart:
+      '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',
+  };
+  return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]}</svg>`;
+}
+
+
+function renderShell() {
+  const nav = [
+    ['shop.html', 'SHOP ALL'],
+    ['new-arrivals.html', 'NEW DROP ↗'],
+    ['collections.html', 'COLLECTIONS'],
+    ['lookbook.html', 'LOOKBOOK'],
+  ];
+  const current = location.pathname.split('/').pop() || 'index.html';
+
+  $('#site-header').innerHTML = `
+    <div class="announcement">
+      INDEPENDENT MINDS. EVERYDAY UNIFORMS.
+      <span>GRATIS ONGKIR MULAI 500K ↗</span>
+    </div>
+    <header class="header">
+      <nav class="nav" aria-label="Navigasi utama">
+        <a class="logo" href="${window.resolvePath('index.html')}" aria-label="OFFBEAT beranda">OFFBEAT<sup>®</sup></a>
+        <button class="menu-toggle" aria-label="Buka menu" aria-expanded="false" aria-controls="main-nav">☰</button>
+        <div class="nav-links" id="main-nav">
+          ${nav
+            .map(
+              ([url, label]) =>
+                `<a href="${window.resolvePath(url)}" ${current === url ? 'aria-current="page"' : ''}>${label}</a>`
+            )
+            .join('')}
+        </div>
+        <div class="nav-actions">
+          <a class="icon-link" href="${window.resolvePath('search.html')}" aria-label="Cari produk">${icon('search')}</a>
+          <a class="icon-link account-link" href="${window.resolvePath('account.html')}" aria-label="Akun saya">${icon('user')}</a>
+          <a class="icon-link" href="${window.resolvePath('wishlist.html')}" aria-label="Wishlist">${icon('heart')}</a>
+          <a class="icon-link" href="${window.resolvePath('cart.html')}" aria-label="Keranjang">
+            ${icon('bag')}<span class="action-label">BAG</span> (<span data-cart-count>0</span>)
+          </a>
+        </div>
+      </nav>
+    </header>`;
+
+  $('#site-footer').innerHTML = `
+    <section class="newsletter">
+      <div class="container newsletter-inner">
+        <div>
+          <span class="eyebrow">MASUK KE FREKUENSI KAMI</span>
+          <h2>GOOD THINGS. NO SPAM.</h2>
+          <p>Kabar koleksi baru dan cerita di baliknya.</p>
+        </div>
+        <form class="newsletter-form" id="newsletter-form">
+          <label for="newsletter-email" class="sr-only">Alamat email newsletter demo</label>
+          <input id="newsletter-email" type="email" required placeholder="Alamat email kamu"
+            maxlength="120" autocomplete="email">
+          <button class="btn" type="submit" aria-label="Daftar newsletter demo">I'M IN ↗</button>
+        </form>
+      </div>
+      <p class="container form-status" id="newsletter-status" role="status"></p>
+    </section>
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a href="${window.resolvePath('index.html')}" class="logo">OFFBEAT<sup>®</sup></a>
+            <p>Wear your own frequency.<br>Streetwear untuk kamu yang punya cara sendiri.</p>
+          </div>
+          <div>
+            <h3>THE GOOD STUFF</h3>
+            <a href="${window.resolvePath('shop.html')}">Semua produk</a>
+            <a href="${window.resolvePath('tees.html')}">Graphic tees</a>
+            <a href="${window.resolvePath('hoodies.html')}">Hoodies</a>
+            <a href="${window.resolvePath('accessories.html')}">Accessories</a>
+            <a href="${window.resolvePath('collections.html')}">Koleksi</a>
+          </div>
+          <div>
+            <h3>NEED A HAND?</h3>
+            <a href="${window.resolvePath('size-guide.html')}">Panduan ukuran</a>
+            <a href="${window.resolvePath('shipping.html')}">Pengiriman</a>
+            <a href="${window.resolvePath('payment.html')}">Pembayaran</a>
+            <a href="${window.resolvePath('faq.html')}">FAQ</a>
+            <a href="${window.resolvePath('contact.html')}">Hubungi kami</a>
+          </div>
+          <div>
+            <h3>OUR LITTLE WORLD</h3>
+            <a href="${window.resolvePath('about.html')}">Tentang OFFBEAT</a>
+            <a href="${window.resolvePath('lookbook.html')}">Lookbook</a>
+            <a href="${window.resolvePath('account.html')}">Akun saya</a>
+            <a href="${window.resolvePath('orders.html')}">Pesanan saya</a>
+            <a href="${window.resolvePath('wishlist.html')}">Wishlist</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© 2026 OFFBEAT. A student-made independent label.</span>
+          <span>Proyek kuliah · Transaksi &amp; akun merupakan simulasi</span>
+          <span>MADE WITH GOOD ENERGY ↗</span>
+        </div>
+      </div>
+    </footer>`;
+
+  $('.menu-toggle').addEventListener('click', event => {
+    const expanded = event.currentTarget.getAttribute('aria-expanded') !== 'true';
+    event.currentTarget.setAttribute('aria-expanded', String(expanded));
+    $('#main-nav').classList.toggle('open', expanded);
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      $('#main-nav').classList.remove('open');
+      $('.menu-toggle').setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  $('#newsletter-form').addEventListener('submit', event => {
+    event.preventDefault();
+    $('#newsletter-status').textContent =
+      'Terima kasih! Pendaftaran newsletter demo berhasil. Tidak ada email yang dikirim.';
+    event.target.reset();
+  });
+
+  updateCartCount();
+}
+
+function updateCartCount() {
+  $$('[data-cart-count]').forEach(
+    el => (el.textContent = cartItems().reduce((sum, item) => sum + item.qty, 0))
+  );
+}
+
+function productCard(product) {
+  const liked = wishlistIds().includes(product.id);
+  return `
+    <article class="product-card">
+      <a class="product-image" href="${window.resolvePath('product.html')}?id=${product.id}">
+        <img src="${window.resolvePath('images/')}${product.image}.svg"
+          alt="${safe(product.name + ' warna ' + product.color)}"
+          loading="lazy" width="480" height="540">
+        <span class="product-badge">${product.tag}</span>
+      </a>
+      <button class="heart" data-wishlist="${product.id}"
+        aria-label="${liked ? 'Hapus' : 'Simpan'} ${safe(product.name)} ${liked ? 'dari' : 'ke'} wishlist"
+        aria-pressed="${liked}">${liked ? '♥' : '♡'}</button>
+      <div class="product-meta">
+        <div>
+          <h3><a href="${window.resolvePath('product.html')}?id=${product.id}">${product.name}</a></h3>
+          <p>${product.label} · ${product.color}</p>
+        </div>
+        <span class="price">${money(product.price)}</span>
+      </div>
+      <div class="swatches" aria-hidden="true"><i></i><i></i><i></i></div>
+    </article>`;
+}
+
+
+function renderProducts(target, products) {
+  const el = typeof target === 'string' ? $(target) : target;
+  if (!el) return;
+  el.innerHTML = products.length
+    ? products.map(productCard).join('')
+    : `<div class="empty">
+        <h2>BELUM KETEMU.</h2>
+        <p>Coba kata kunci atau kategori lainnya.</p>
+        <a class="btn outline" href="${window.resolvePath('shop.html')}">Lihat semua produk ↗</a>
+      </div>`;
+}
+
+
+function summaryHTML(cart, shipping = 'regular') {
+  const sum = totals(cart, shipping);
+  return `
+    <div class="summary-line">
+      <span>Subtotal</span><span>${money(sum.subtotal)}</span>
+    </div>
+    <div class="summary-line">
+      <span>Pengiriman ${shipping === 'express' ? 'ekspres' : 'reguler'}</span>
+      <span>${sum.delivery ? money(sum.delivery) : 'Gratis'}</span>
+    </div>
+    <div class="summary-line total">
+      <span>Total</span><span>${money(sum.total)}</span>
+    </div>`;
+}
+
+
+renderShell();
+
+
+document.addEventListener('click', event => {
+  const button = event.target.closest('[data-wishlist]');
+  if (!button) return;
+
+  const id = button.dataset.wishlist;
+  if (!productById(id)) return;
+
+  const current = wishlistIds();
+  const liked = current.includes(id);
+
+  if (!Store.set('wishlist', liked ? current.filter(item => item !== id) : [...current, id]))
+    return;
+
+  $$(`[data-wishlist="${id}"]`).forEach(el => {
+    el.setAttribute('aria-pressed', String(!liked));
+    el.setAttribute(
+      'aria-label',
+      `${liked ? 'Simpan' : 'Hapus'} ${productById(id).name} ${liked ? 'ke' : 'dari'} wishlist`
+    );
+    el.textContent = liked ? '♡' : '♥';
+  });
+
+  toast(liked ? 'Produk dihapus dari wishlist.' : 'Produk disimpan ke wishlist.');
+  document.dispatchEvent(new Event('wishlist-change'));
+});
+
+
+window.addEventListener('storage', () => {
+  updateCartCount();
+  document.dispatchEvent(new Event('wishlist-change'));
+  document.dispatchEvent(new Event('cart-change'));
+});
+
+
+
