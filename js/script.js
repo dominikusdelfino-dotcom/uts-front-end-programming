@@ -92,7 +92,7 @@ const PRODUCTS = [
     tag: 'BEST SELLER',
     fresh: false,
     description:
-      'Lapisan favorit untuk udara dingin dan perjalanan pulang yang panjang. Print orbit berwarna acid green.',
+      'Lapisan favorit untuk udara dingin dan perjalanan pulang yang panjang.',
     material: 'Cotton fleece 330 gsm',
     sizes: ['S', 'M', 'L', 'XL'],
     collection: 'after-hours',
@@ -628,7 +628,7 @@ if ($('#product-detail')) {
           <details>
             <summary>Pengiriman &amp; penukaran</summary>
             <p>
-              Pengiriman reguler sekitar 3?5 hari kerja. Baca
+              Pengiriman reguler sekitar 3-5 hari kerja. Baca
               <a href="${window.resolvePath('shipping.html')}">panduan pengiriman</a> dan
               <a href="${window.resolvePath('faq.html')}">syarat penukaran</a>.
               Seluruh transaksi di proyek ini adalah simulasi.
